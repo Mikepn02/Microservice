@@ -69,7 +69,7 @@ services:
       - microservices-net
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: ms_kafka
+    container_name: m_kafka
     ports:
       - "9092:9092"
     depends_on:

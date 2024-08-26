@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static com.mpn.ecommerce.notification.model.NotificationType.ORDER_CONFIRMATION;
@@ -26,6 +27,10 @@ public class NotificationsConsumer {
     @KafkaListener(topics = "payment-topic")
     public void consumePaymentSuccessNotifications(PaymentConfirmation paymentConfirmation) throws MessagingException {
         log.info(format("Consuming the message from payment-topic Topic:: %s", paymentConfirmation));
+
+        BigDecimal totalAmount = paymentConfirmation.products().stream()
+                        .map(product -> product.price().multiply(BigDecimal.valueOf(product.quantity())))
+                         .reduce(BigDecimal.ZERO , BigDecimal::add);
         repository.save(
                 Notification.builder()
                         .type(PAYMENT_CONFIRMATION)
@@ -34,10 +39,11 @@ public class NotificationsConsumer {
                         .build()
         );
         var customerName = paymentConfirmation.customerFirstName() + " " + paymentConfirmation.customerLastName();
+
         emailService.sendPaymentSuccessEmail(
                 paymentConfirmation.customerEmail(),
                 customerName,
-                paymentConfirmation.amount(),
+                totalAmount,
                 paymentConfirmation.orderReference()
         );
     }
@@ -45,6 +51,10 @@ public class NotificationsConsumer {
     @KafkaListener(topics = "order-topic")
     public void consumeOrderConfirmationNotifications(OrderConfirmation orderConfirmation) throws MessagingException {
         log.info(format("Consuming the message from order-topic Topic:: %s", orderConfirmation));
+
+        BigDecimal totalAmount = orderConfirmation.products().stream()
+                .map(product -> product.price().multiply(BigDecimal.valueOf(product.quantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         repository.save(
                 Notification.builder()
                         .type(ORDER_CONFIRMATION)
@@ -56,7 +66,7 @@ public class NotificationsConsumer {
         emailService.sendOrderConfirmationEmail(
                 orderConfirmation.customer().email(),
                 customerName,
-                orderConfirmation.totalAmount(),
+                totalAmount,
                 orderConfirmation.orderReference(),
                 orderConfirmation.products()
         );

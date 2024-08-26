@@ -30,6 +30,7 @@ public class PaymentService {
                 )
         );
 
+        System.out.println("Here is the customer email: "+ request.customer().email());
         return payment.getId();
     }
 }

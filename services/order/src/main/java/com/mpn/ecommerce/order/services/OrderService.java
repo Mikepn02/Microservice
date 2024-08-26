@@ -59,7 +59,6 @@ public class OrderService {
 
         );
         paymentClient.requestOrderPayment(paymentRequest);
-
         orderProducer.sendOrderConfirmation(
                 new OrderConfirmation(
                         request.reference(),
