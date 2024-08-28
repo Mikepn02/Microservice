@@ -39,6 +39,11 @@ public class OrderService {
 
         var purchasedProduct = this.productClient.purchaseProducts(request.products());
 
+
+        BigDecimal totalAmount = purchasedProduct.stream()
+                .map(product -> product.price().multiply(BigDecimal.valueOf(product.quantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         var order = this.repository.save(mapper.toOrder(request));
 
         for (PurchaseRequest purchaseRequest : request.products()) {
@@ -52,7 +57,7 @@ public class OrderService {
             );
         }
         var paymentRequest = new PaymentRequest(
-                request.amount(),
+                totalAmount,
                 request.paymentMethod(),
                 order.getId(),
                 order.getReference(),
@@ -63,7 +68,7 @@ public class OrderService {
         orderProducer.sendOrderConfirmation(
                 new OrderConfirmation(
                         request.reference(),
-                        request.amount(),
+                        totalAmount,
                         request.paymentMethod(),
                         customer,
                         purchasedProduct
@@ -86,4 +91,4 @@ public class OrderService {
                 .map(mapper::fromOrder)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("No Order found with the provided id: %d", orderId)));
     }
-}
+}   
