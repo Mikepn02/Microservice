@@ -28,9 +28,6 @@ public class NotificationsConsumer {
     public void consumePaymentSuccessNotifications(PaymentConfirmation paymentConfirmation) throws MessagingException {
         log.info(format("Consuming the message from payment-topic Topic:: %s", paymentConfirmation));
 
-        BigDecimal totalAmount = paymentConfirmation.products().stream()
-                        .map(product -> product.price().multiply(BigDecimal.valueOf(product.quantity())))
-                         .reduce(BigDecimal.ZERO , BigDecimal::add);
         repository.save(
                 Notification.builder()
                         .type(PAYMENT_CONFIRMATION)
@@ -43,7 +40,7 @@ public class NotificationsConsumer {
         emailService.sendPaymentSuccessEmail(
                 paymentConfirmation.customerEmail(),
                 customerName,
-                totalAmount,
+                paymentConfirmation.amount(),
                 paymentConfirmation.orderReference()
         );
     }

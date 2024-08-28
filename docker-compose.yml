@@ -56,6 +56,8 @@ services:
     networks:
       - microservices-net
 
+
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
@@ -67,6 +69,15 @@ services:
       - "22181:2181"
     networks:
       - microservices-net
+
+  zipkin:
+    container_name: zipkin
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - microservices-net
+
   kafka:
     image: confluentinc/cp-kafka:latest
     container_name: m_kafka

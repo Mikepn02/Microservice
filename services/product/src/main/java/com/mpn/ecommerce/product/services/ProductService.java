@@ -23,7 +23,6 @@ public class ProductService {
     private final ProductRepository repository;
     private final ProductMapper mapper;
 
-
     public Integer createProduct(ProductRequest request) {
         var product = mapper.toProduct(request);
         return repository.save(product).getId();
@@ -52,9 +51,10 @@ public class ProductService {
             var newAvailableQuantity = product.getAvailableQuantity() - productRequest.quantity();
             product.setAvailableQuantity(newAvailableQuantity);
             repository.save(product);
-
             purchasedProducts.add(mapper.toproductPurchaseResponse(product , productRequest.quantity()));
         }
+
+
         return  purchasedProducts;
     }
 
